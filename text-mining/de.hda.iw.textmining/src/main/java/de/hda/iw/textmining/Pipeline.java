@@ -15,6 +15,7 @@ import org.apache.uima.jcas.JCas;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
+import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpNameFinder;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpPosTagger;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
 
@@ -27,24 +28,25 @@ public class Pipeline
     public static void main(String[] args) throws Exception
     {
         CollectionReaderDescription reader = createReaderDescription(TextReader.class,
-                TextReader.PARAM_SOURCE_LOCATION, "input/example.txt",
-                TextReader.PARAM_LANGUAGE, "en");
+                TextReader.PARAM_SOURCE_LOCATION, "input/document.txt",
+                TextReader.PARAM_LANGUAGE, "de");
         
         AnalysisEngineDescription pipeline = createEngineDescription(
                 createEngineDescription(OpenNlpSegmenter.class),
-                createEngineDescription(OpenNlpPosTagger.class));
-        
+                createEngineDescription(OpenNlpPosTagger.class)
+//                createEngineDescription(OpenNlpNameFinder.class)
+//                createEngineDescription(StanfordNamedEntityRecognizer.class)
+        );
+
         for (JCas jcas : SimplePipeline.iteratePipeline(reader, pipeline)) {
-            int sentenceCount = 0;
-        	for (Sentence sentence : select(jcas, Sentence.class)) {
-        		sentenceCount = sentenceCount + 1;
-        	}
+        	// Zählt die Sätze Text
+        	int sentenceCount = select(jcas, Sentence.class).size();
             System.out.println(sentenceCount);
 
             int tokenCount = 0;
         	Map<String, Integer> map = new HashMap<String, Integer>();
             for (Token token : select(jcas, Token.class)) {
-//            	token.getPos().getClass().getSimpleName();
+            	// TODO: Unterschied von getSimpleName() und getPosValue() ?
             	String posName = token.getPos().getClass().getSimpleName();
 //            	String posName = token.getPos().getPosValue();
             	if( map.get(posName) == null )
@@ -58,10 +60,12 @@ public class Pipeline
 
                 tokenCount = tokenCount + 1;
             }
+            // Ausgabe Gesamtanzahl Tokens
+            System.out.println("Anzahl Tokens (gesamt): " + tokenCount);
+            // Ausgabe der Anzahl der einzelnen POS-Elemente 
             for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                System.out.println("POS = " + entry.getKey() + ", COUNT = " + entry.getValue());
+                System.out.println("Anzahl POS " + entry.getKey() + ": " + entry.getValue());
             }
-            System.out.println(tokenCount);
         }
     }
 }
