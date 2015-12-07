@@ -5,19 +5,27 @@ import static org.apache.uima.fit.factory.CollectionReaderFactory.createReaderDe
 import static org.apache.uima.fit.util.JCasUtil.select;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.clearnlp.ClearNlpLemmatizer;
+import de.tudarmstadt.ukp.dkpro.core.clearnlp.ClearNlpPosTagger;
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
+import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolLemmatizer;
+import de.tudarmstadt.ukp.dkpro.core.matetools.MateLemmatizer;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpPosTagger;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
+import de.tudarmstadt.ukp.dkpro.core.stopwordremover.StopWordRemover;
 
 /**
  * Simple pipeline with a reader but no writer, as it could be used when embedding it into an
@@ -25,88 +33,114 @@ import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
  */
 public class Pipeline
 {
-    public static void main(String[] args) throws Exception
+    public static final String PARAM_USE_STOPWORDS = "useStopwords";
+    @ConfigurationParameter(name = PARAM_USE_STOPWORDS, mandatory = true, defaultValue = "true")
+    private boolean useStopWords;
+
+    private List<String> attributes = new ArrayList<String>();
+    
+	public static void main(String[] args) throws Exception
     {
         CollectionReaderDescription reader = createReaderDescription(TextReader.class,
-                TextReader.PARAM_SOURCE_LOCATION, "input/*",
+                TextReader.PARAM_SOURCE_LOCATION, "input/aan/papers_text/A00*",
+//                TextReader.PARAM_SOURCE_LOCATION, "input/masc/spoken/face-to-face/*",
                 TextReader.PARAM_LANGUAGE, "en");
         
         AnalysisEngineDescription pipeline = createEngineDescription(
                 createEngineDescription(OpenNlpSegmenter.class),
-                createEngineDescription(OpenNlpPosTagger.class)
-//                createEngineDescription(OpenNlpNameFinder.class)
+//                createEngineDescription(
+//                		StopWordRemover.class,
+//        				StopWordRemover.PARAM_MODEL_LOCATION, 
+//        				"[en]input/stop-word-list.txt" ),
+                createEngineDescription(OpenNlpPosTagger.class),
+                createEngineDescription(LanguageToolLemmatizer.class)
 //                createEngineDescription(StanfordNamedEntityRecognizer.class)
         );
 
         for (JCas jcas : SimplePipeline.iteratePipeline(reader, pipeline)) {
-        	// Zählt die Sätze Text
-            System.out.println("Anzahl Sätze: " + countSentence(jcas));
-
-            int tokenCount = countTokens(jcas);
-            
-        	
-            // Ausgabe Gesamtanzahl Tokens
-            System.out.println("Anzahl Tokens (gesamt): " + tokenCount);
-            // Ausgabe der Anzahl der einzelnen POS-Elemente 
-            Map<String,Integer> posmap = getPOSMap(jcas);
-            for (Map.Entry<String, Integer> entry : posmap.entrySet()) {
-                Double percentage = ( (double)entry.getValue() / (double)tokenCount ) * 100;
-                DecimalFormat numberFormat = new DecimalFormat("#.0");
-            	System.out.println("Anzahl POS " + entry.getKey() + ": " + entry.getValue());
-                System.out.println(
-                		"Prozentualer Anteil des POS " + entry.getKey() 
-                		+ ": " + ( numberFormat.format(percentage) ) 
-                		+ "%");
-            }
+        	Arff a = new Arff(jcas);
+        	a.print();
         }
     }
     
-    /**
-     * Returns the count of the Sentences in the Document(s)
-     * 
-     * @param jcas
-     * @return Integer
-     */
-    private static Integer countSentence( JCas jcas )
-    {
-    	return select(jcas, Sentence.class).size();
-    }
-    
-    /**
-     * Returns the count of the Tokens in the Document(s)
-     * 
-     * @param jcas
-     * @return Integer
-     */
-    private static Integer countTokens( JCas jcas)
-    {
-    	return select(jcas, Token.class).size();
-    }
-
-    private static Map<String, Integer> getPOSMap( JCas jcas )
-    {
-    	Map<String, Integer> map = new HashMap<String, Integer>();
-        for (Token token : select(jcas, Token.class)) {
-        	// TODO: Unterschied von getSimpleName() und getPosValue() ?
-        	String posName = token.getPos().getClass().getSimpleName();
-//        	String posName = token.getPos().getPosValue();
-
-//        	String tokenValue = token.getCoveredText().trim();
-//        	Pattern p = Pattern.compile("\\W+\\w+|\\w+\\W+");
-//        	Matcher m = p.matcher(tokenValue);
-//        	if(m.find())
-//        	{
-//        		//System.out.println(tokenValue);
-//        	}
-        	if( map.get(posName) == null )
-        	{
-            	map.put(posName, 1 );
-        	} else {
-        		Integer count = map.get( posName );
-        		count = count + 1;
-        		map.put( posName, count );
-        	}
-        }
-        return map;
-    }
-}
+//	public static String writeHeader() throws IOException
+//    {
+//		// Create the Arff header
+//		StringBuilder arff = new StringBuilder();
+//		arff.append("@relation temp-relation" + LF);
+//		arff.append(LF);    	
+//
+//		for (File file : csvFiles)
+//		{			
+//			String feature = file.getParentFile().getName() + "/" + file.getName().substring(0, file.getName().length() - 4);
+//			// feature = feature.replaceAll(",", "");
+//			
+//			// Add the attribute to the Arff header
+//			arff.append("@attribute " + feature + " numeric" + LF);
+//			
+//			// Read data
+//			List<String> lines = FileUtils.readLines(file);
+//			for (int doc = 1; doc <= lines.size(); doc++)
+//			{
+//				String line = lines.get(doc - 1);
+//				
+//				if (line.length() > 0)	// Ignore empty lines
+//				{
+//					double value = Double.parseDouble(line);	// There's just the score on the line, nothing else.
+//					
+//					// Get doc object in data list
+//					List<Double> docObj;
+//					if (data.containsKey(doc))
+//						docObj = data.get(doc);
+//					else
+//						docObj = new ArrayList<Double>();
+//					
+//					// Put data
+//					docObj.add(value);
+//					data.put(doc, docObj);
+//				}
+//			}
+//		}
+//		
+//		// Add gold attribute to attribute list in header
+//		// We also need to do this for unlabeled data
+//		arff.append("@attribute gold real" + LF);
+//		
+//		// Add gold similarity score 
+//		List<String> lines;
+//		if (goldFile != null)
+//		{
+//			lines = FileUtils.readLines(goldFile);
+//		}
+//		else
+//		{
+//			lines = new ArrayList<String>();
+//			for (int i = 0; i < FileUtils.readLines(csvFiles.iterator().next()).size(); i++)
+//				lines.add("0.0");
+//		}
+//			
+//		for (int doc = 1; doc <= lines.size(); doc++)
+//		{					
+//			double value = Double.parseDouble(lines.get(doc - 1));				
+//			
+//			List<Double> docObj = data.get(doc);
+//			docObj.add(value);
+//			data.put(doc, docObj);									
+//		}
+//		
+//		// Finalize header
+//		arff.append(LF);
+//		arff.append("@data" + LF);
+//		
+//		// Write data
+//		for (int i = 1; i <= data.keySet().size(); i++)
+//		{			
+//			String dataItem = StringUtils.join(data.get(i), ",");
+//			
+//			arff.append(dataItem + LF);
+//		}
+//		
+//		
+//		return arff.toString();
+//    }
+ }
