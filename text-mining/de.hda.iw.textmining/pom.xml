@@ -77,5 +77,11 @@
   		</artifactId>
   		<version>1.7.0</version>
   	</dependency>
+  	<dependency>
+  		<groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
+  		<artifactId>
+  			de.tudarmstadt.ukp.dkpro.core.api.frequency-asl
+  		</artifactId>
+  	</dependency>
   </dependencies>
 </project>

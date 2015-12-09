@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 
+import de.tudarmstadt.ukp.dkpro.core.api.frequency.util.FrequencyDistribution;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -16,7 +17,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 /**
  * 
  */
-public class Arff
+public class Statistics
 {
 	private JCas jcas;
 	private Integer sentenceCount;
@@ -34,7 +35,7 @@ public class Arff
     @ConfigurationParameter(name = PARAM_USE_STOPWORDS, mandatory = true, defaultValue = "true")
     private boolean useStopWords;
 
-	public Arff(JCas jcas) throws Exception
+	public Statistics(JCas jcas) throws Exception
     {
     	this.jcas = jcas;
     }
@@ -47,15 +48,25 @@ public class Arff
 		// Zählt die Sätze Text
         System.out.println("Anzahl Sätze: " + getSentenceCount());
 
-        // Ausgabe Gesamtanzahl Tokens
-        System.out.println("Anzahl Tokens (gesamt): " + getTokenCount());
+//        // Ausgabe Gesamtanzahl Tokens
+//        System.out.println("Anzahl Tokens (gesamt): " + getTokenCount());
 
+        // Ausgabe Gesamtanzahl Tokens
+        FrequencyDistribution<String> pos = getPOSDistribution();
+        System.out.println("Anzahl POS (gesamt): " + pos.getB() );
+//        System.out.println("POS (Anzahl): " + freq.toString() );
+        long nomen = pos.getCount( "NN" ) + pos.getCount( "NNS" ) + pos.getCount( "NNP" ) + pos.getCount( "NNPS" );
+        System.out.println("POS (Nomen): " + nomen );
+        
+        
         // Ausgabe Gesamtanzahl Tokens
         System.out.println("Anzahl Lemma (gesamt): " + getLemmaMap().size());
 
-        Double p = ( (double)getLemmaMap().size() / (double)getTokenCount() ) * 100;
+        FrequencyDistribution<String> lemmas = getLemmaDistribution();
+        Double p = ( (double)lemmas.getB() / (double)getTokenCount() ) * 100;
         DecimalFormat numberFormat = new DecimalFormat("#.0");
         System.out.println("Anteil Lemma an Tokens (gesamt): " + numberFormat.format(p) );
+        System.out.println( lemmas.toString() );
 
 //        // Ausgabe der Anzahl der einzelnen POS-Elemente 
 //        for (Map.Entry<String, Integer> entry : getLemmaMap().entrySet()) {
@@ -77,7 +88,7 @@ public class Arff
      * 
      * @return Integer
      */
-    private Integer getSentenceCount()
+    public Integer getSentenceCount()
     {
     	if( this.sentenceCount == null )
     		this.sentenceCount = select(this.jcas, Sentence.class).size();
@@ -89,7 +100,7 @@ public class Arff
      * 
      * @return Integer
      */
-    private Integer getTokenCount()
+    public Integer getTokenCount()
     {
     	if( this.tokenCount == null )
     		this.tokenCount = select(this.jcas, Token.class).size();
@@ -101,7 +112,7 @@ public class Arff
      * 
      * @return Map<String, Integer>
      */
-    private Map<String, Integer> getPOSMap()
+    public Map<String, Integer> getPOSMap()
     {
     	if( this.posMap == null )
     	{
@@ -125,11 +136,25 @@ public class Arff
     }
 
     /**
+     * Gibt die Frequency Distribution für POS zurück.
+     * 
+     * @return FrequencyDistribution<String>
+     */
+    public FrequencyDistribution<String> getPOSDistribution()
+    {
+		FrequencyDistribution<String> freq = new FrequencyDistribution<String>();
+		for (Token token : select(this.jcas, Token.class)) {
+			freq.inc( token.getPos().getPosValue() );
+		}
+		return freq;
+    }
+    
+    /**
      * Returns the distinct POS-Count of the CAS
      * 
      * @return Map<String, Integer>
      */
-    private Map<String, Integer> getLemmaMap()
+    public Map<String, Integer> getLemmaMap()
     {
     	if( this.lemmaMap == null )
     	{
@@ -148,5 +173,19 @@ public class Arff
     		}
     	}
         return this.lemmaMap;
+    }
+
+    /**
+     * Gibt die Frequency Distribution für Lemma zurück.
+     * 
+     * @return FrequencyDistribution<String>
+     */
+    public FrequencyDistribution<String> getLemmaDistribution()
+    {
+		FrequencyDistribution<String> freq = new FrequencyDistribution<String>();
+		for (Token token: select(this.jcas, Token.class)) {
+			freq.inc( token.getLemma().getValue() );
+		}
+		return freq;
     }
 }
