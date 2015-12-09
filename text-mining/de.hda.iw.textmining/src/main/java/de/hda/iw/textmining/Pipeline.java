@@ -42,7 +42,7 @@ public class Pipeline
 	public static void main(String[] args) throws Exception
     {
         CollectionReaderDescription reader = createReaderDescription(TextReader.class,
-                TextReader.PARAM_SOURCE_LOCATION, "input/aan/papers_text/A00*",
+                TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*",
                 TextReader.PARAM_LANGUAGE, "en");
         
         AnalysisEngineDescription pipeline = createEngineDescription(
@@ -63,7 +63,7 @@ public class Pipeline
         }
 
         CollectionReaderDescription nonscientificreader = createReaderDescription(TextReader.class,
-              TextReader.PARAM_SOURCE_LOCATION, "input/masc/spoken/face-to-face/*",
+              TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*",
               TextReader.PARAM_LANGUAGE, "en");
       
         for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificreader, pipeline)) {
