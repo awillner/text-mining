@@ -1,0 +1,6 @@
+@RELATION scientific
+
+@ATTRIBUTE tokencount NUMERIC
+@ATTRIBUTE scientific {yes,no}
+
+@DATA
