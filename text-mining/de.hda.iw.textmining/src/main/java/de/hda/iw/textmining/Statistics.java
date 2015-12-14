@@ -34,7 +34,12 @@ public class Statistics
     public static final String PARAM_USE_STOPWORDS = "useStopwords";
     @ConfigurationParameter(name = PARAM_USE_STOPWORDS, mandatory = true, defaultValue = "true")
     private boolean useStopWords;
-
+	private Long adjectiveCount;
+	private Long adverbCount;
+	private Long verbCount;
+	private Long nounCount;
+	private FrequencyDistribution<String> posFreq;
+	
 	public Statistics(JCas jcas) throws Exception
     {
     	this.jcas = jcas;
@@ -51,18 +56,24 @@ public class Statistics
 //        // Ausgabe Gesamtanzahl Tokens
 //        System.out.println("Anzahl Tokens (gesamt): " + getTokenCount());
 
-        // Ausgabe Gesamtanzahl Tokens
-        FrequencyDistribution<String> pos = getPOSDistribution();
-        System.out.println("Anzahl POS (gesamt): " + pos.getB() );
+        // Ausgabe Zählungen
+        Long nomen = getNounCount();
+		Long verben = getVerbCount();
+		Long adverben = getAdverbCount();
+		Long adjektive = getAdjectiveCount();
 //        System.out.println("POS (Anzahl): " + freq.toString() );
-        long nomen = pos.getCount( "NN" ) + pos.getCount( "NNS" ) + pos.getCount( "NNP" ) + pos.getCount( "NNPS" );
+		System.out.println("Anzahl POS (gesamt): " + getPosFreq().getB() );
         System.out.println("POS (Nomen): " + nomen );
+        System.out.println("POS (Verben): " + verben );
+        System.out.println("POS (Adverben): " + adverben );
+        System.out.println("POS (Adjektive): " + adjektive );
         
         
-        // Ausgabe Gesamtanzahl Tokens
+        // Ausgabe Verhältnisse
         System.out.println("Anzahl Lemma (gesamt): " + getLemmaMap().size());
-
+        
         FrequencyDistribution<String> lemmas = getLemmaDistribution();
+        double nomenAnteil = getNounRate();
         Double p = ( (double)lemmas.getB() / (double)getTokenCount() ) * 100;
         DecimalFormat numberFormat = new DecimalFormat("#.0");
         System.out.println("Anteil Lemma an Tokens (gesamt): " + numberFormat.format(p) );
@@ -140,13 +151,82 @@ public class Statistics
      * 
      * @return FrequencyDistribution<String>
      */
-    public FrequencyDistribution<String> getPOSDistribution()
+    public FrequencyDistribution<String> getPosFreq()
     {
-		FrequencyDistribution<String> freq = new FrequencyDistribution<String>();
-		for (Token token : select(this.jcas, Token.class)) {
-			freq.inc( token.getPos().getPosValue() );
-		}
-		return freq;
+        if( this.posFreq == null )
+        {
+			this.posFreq = new FrequencyDistribution<String>();
+        	for (Token token : select(this.jcas, Token.class)) {
+				this.posFreq.inc( token.getPos().getPosValue() );
+			}
+        }
+		return this.posFreq;
+    }
+    
+    /**
+     * Zählt die Nomen im Cas.
+     * 
+     * @return long
+     */
+    public Long getNounCount()
+    {
+        if( this.nounCount == null )
+        {
+    		this.nounCount = getPosFreq().getCount( "NN" ) + getPosFreq().getCount( "NNS" ) + getPosFreq().getCount( "NNP" ) 
+        	+ getPosFreq().getCount( "NNPS" );
+        }
+    		
+    	return this.nounCount;
+    }
+    
+    /**
+     * Zählt die Verben im Cas.
+     * 
+     * @return long
+     */
+    public Long getVerbCount()
+    {
+        if( this.verbCount == null )
+    		this.verbCount = getPosFreq().getCount( "VB" ) + getPosFreq().getCount( "VBD" ) + getPosFreq().getCount( "VBG" ) 
+        		+ getPosFreq().getCount( "VBN" ) + getPosFreq().getCount( "VBP" ) + getPosFreq().getCount( "VBZ" );
+    	return this.verbCount;
+    }
+    
+    /**
+     * Zählt die Adverben im Cas.
+     * 
+     * @return long
+     */
+    public Long getAdverbCount()
+    {
+        if( this.adverbCount == null )
+    		this.adverbCount = this.getPosFreq().getCount( "RB" ) + getPosFreq().getCount( "RBR" ) + getPosFreq().getCount( "RBS" );
+    	return this.adverbCount;
+
+    }
+    
+    /**
+     * Zählt die Advjektive im Cas.
+     * 
+     * @return long
+     */
+    public Long getAdjectiveCount()
+    {
+        if( this.adjectiveCount == null )
+    		this.adjectiveCount = getPosFreq().getCount( "JJ" ) + getPosFreq().getCount( "JJR" ) + getPosFreq().getCount( "JJS" );
+    	return this.adjectiveCount;
+    }
+    
+    /**
+     * Berechnung des Verhältnisses von Nomen zu allen Lemmata
+     * 
+     * @param FrequencyDistribution<String> nomen Nomenanzahl
+     * @return long
+     */
+    public double getNounRate()
+    {
+        return getNounCount() / getTokenCount() ;
+
     }
     
     /**
