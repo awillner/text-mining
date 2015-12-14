@@ -74,6 +74,9 @@ public class Statistics
         
         FrequencyDistribution<String> lemmas = getLemmaDistribution();
         double nomenAnteil = getNounRate();
+        double verbenAnteil = getVerbRate();
+        double adverbenAnteil = getAdverbRate();
+        double adjektiveAnteil = getAdjectiveRate();
         Double p = ( (double)lemmas.getB() / (double)getTokenCount() ) * 100;
         DecimalFormat numberFormat = new DecimalFormat("#.0");
         System.out.println("Anteil Lemma an Tokens (gesamt): " + numberFormat.format(p) );
@@ -218,7 +221,7 @@ public class Statistics
     }
     
     /**
-     * Berechnung des Verhältnisses von Nomen zu allen Lemmata
+     * Berechnung des Verhältnisses von Nomen zu allen POS
      * 
      * @param FrequencyDistribution<String> nomen Nomenanzahl
      * @return long
@@ -226,7 +229,39 @@ public class Statistics
     public double getNounRate()
     {
         return getNounCount() / getTokenCount() ;
-
+    }
+    
+    /**
+     * Berechnung des Verhältnisses von Verben zu allen POS
+     * 
+     * @param FrequencyDistribution<String> nomen Nomenanzahl
+     * @return long
+     */
+    public double getVerbRate()
+    {
+        return getVerbCount() / getTokenCount() ;
+    }
+    
+    /**
+     * Berechnung des Verhältnisses von Adjectiven zu allen POS
+     * 
+     * @param FrequencyDistribution<String> nomen Nomenanzahl
+     * @return long
+     */
+    public double getAdjectiveRate()
+    {
+        return getAdjectiveCount() / getTokenCount() ;
+    }
+    
+    /**
+     * Berechnung des Verhältnisses von Adverbien zu allen POS
+     * 
+     * @param FrequencyDistribution<String> nomen Nomenanzahl
+     * @return long
+     */
+    public double getAdverbRate()
+    {
+        return getAdverbCount() / getTokenCount() ;
     }
     
     /**
