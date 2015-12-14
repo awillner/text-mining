@@ -11,6 +11,7 @@ import org.apache.uima.jcas.JCas;
 
 import de.tudarmstadt.ukp.dkpro.core.api.frequency.util.FrequencyDistribution;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Paragraph;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
@@ -303,4 +304,24 @@ public class Statistics
 		}
 		return freq;
     }
+    
+    /**
+     * Gibt an, wieviel Tokens durchschnittlich pro Satz verwendet werden.
+     * 
+     * @return
+     */
+    public Double getAvgTokensPerSentence()
+    {
+        return ( (double)getSentenceCount() / (double)getTokenCount() ) * 100;
+    }
+    
+    /**
+     * Gibt die Anzahl an Absätzen zurück.
+     * @return
+     */
+    public Integer getParagraphCount()
+    {
+    	return select(this.jcas, Paragraph.class).size();
+    }
+
 }
