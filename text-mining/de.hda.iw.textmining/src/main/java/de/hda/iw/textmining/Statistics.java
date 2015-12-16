@@ -31,6 +31,7 @@ public class Statistics {
 	private Long numberCount;
 	private Long foreignWordCount;
 	private Long symbolCount;
+	private Long interjectionCount;
 
 	public Statistics(JCas jcas) throws Exception {
 		this.jcas = jcas;
@@ -229,6 +230,19 @@ public class Statistics {
 	}
 
 	/**
+	 * Zählt die Fremdwörter im Cas.
+	 * 
+	 * @return Long
+	 */
+	public Long getInterjectionCount() {
+		if (this.interjectionCount == null) {
+			this.interjectionCount = getPosFreq().getCount("SYM");
+		}
+
+		return this.interjectionCount;
+	}
+
+	/**
 	 * Berechnung des Verhältnisses von Nomen zu allen POS
 	 * 
 	 * @param FrequencyDistribution<String>
@@ -310,6 +324,18 @@ public class Statistics {
 	public String getForeignWordRate() {
 		Double foreignWordRate = (double) getForeignWordCount() / (double) getTokenCount() * 100;
 		return getRate(foreignWordRate);
+	}
+
+	/**
+	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * 
+	 * @param FrequencyDistribution<String>
+	 *            nomen Nomenanzahl
+	 * @return String
+	 */
+	public String getInterjectionRate() {
+		Double interjectionRate = (double) getInterjectionCount() / (double) getTokenCount() * 100;
+		return getRate(interjectionRate);
 	}
 
 	/**

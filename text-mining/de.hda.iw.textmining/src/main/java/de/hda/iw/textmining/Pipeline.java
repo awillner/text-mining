@@ -31,23 +31,25 @@ public class Pipeline {
 		CollectionReaderDescription scientificreader = createReaderDescription(TextReader.class,
 				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
 
-		AnalysisEngineDescription pipeline = createEngineDescription(createEngineDescription(OpenNlpSegmenter.class),
-				createEngineDescription(StopWordRemover.class, StopWordRemover.PARAM_MODEL_LOCATION,
-						"[en]input/stop-word-list.txt"),
-				createEngineDescription(OpenNlpPosTagger.class)
-//				createEngineDescription(LanguageToolLemmatizer.class)
+		AnalysisEngineDescription pipeline = createEngineDescription(
+				createEngineDescription(OpenNlpSegmenter.class), createEngineDescription(StopWordRemover.class,
+						StopWordRemover.PARAM_MODEL_LOCATION, "[en]input/stop-word-list.txt"),
+				createEngineDescription(OpenNlpPosTagger.class),
+				createEngineDescription(LanguageToolLemmatizer.class)
 		// createEngineDescription(StanfordNamedEntityRecognizer.class)
 		);
 
 		ArffWriter arff = new ArffWriter();
 		int count = 0;
 		Date start = new Date();
-		System.out.println( start.toString() );
+		System.out.println(start.toString() + " Start");
 		for (JCas jcas : SimplePipeline.iteratePipeline(scientificreader, pipeline)) {
 			Date time = new Date();
-			System.out.println( time.toString() + " scientific: " + count++);
 			Statistics stats = new Statistics(jcas);
+			System.out.println(time.toString() + " scientific: " + count++ + " " + stats.getTokenCount());
 			arff.addData(stats, "yes");
+			if (count > 500)
+				break;
 		}
 
 		CollectionReaderDescription nonscientificreader = createReaderDescription(TextReader.class,
@@ -57,12 +59,15 @@ public class Pipeline {
 		count = 0;
 		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificreader, pipeline)) {
 			Date time = new Date();
-			System.out.println( time.toString() + " non-scientific: " + count++);
 			Statistics stats = new Statistics(jcas);
+			System.out.println(time.toString() + " non-scientific: " + count++ + " " + stats.getTokenCount());
 			arff.addData(stats, "no");
+			if (count > 500)
+				break;
+
 		}
 		arff.write();
 		Date end = new Date();
-		System.out.println( end.toString() );
+		System.out.println(end.toString() + " Ende");
 	}
 }

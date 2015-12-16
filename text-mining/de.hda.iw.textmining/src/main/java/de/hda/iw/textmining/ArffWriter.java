@@ -3,6 +3,8 @@ package de.hda.iw.textmining;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class ArffWriter {
 
@@ -12,16 +14,28 @@ public class ArffWriter {
 	private String data = "";
 
 	public void addData(Statistics stats, String bool) {
-		this.data += stats.getTokenCount() + "\t," 
-//				+ stats.getLemmaCount() + "\t," 
-				+ stats.getNounCount() + "\t,"
-				+ stats.getNounRate() + "\t," + stats.getAdjectiveCount() + "\t," + stats.getAdjectiveRate() + "\t,"
-				+ stats.getAdverbCount() + "\t," + stats.getAdverbRate() + "\t," + stats.getVerbCount() + "\t,"
-				+ stats.getVerbRate() + "\t," + stats.getNumberCount() + "\t," + stats.getNumberRate() + "\t,"
-				+ stats.getSymbolCount() + "\t," + stats.getSymbolRate() + "\t," + stats.getForeignWordCount() + "\t,"
-				+ stats.getForeignWordRate() + "\t," + stats.getSentenceCount() + "\t," + stats.getParagraphCount() + "\t,"
-				+ stats.getAvgTokensPerSentence() + "\t," 
-//				+ stats.getAvgSentencesPerParagraph() + "\t," 
+		this.data += stats.getTokenCount() + "," 
+				+ stats.getLemmaCount() + "," 
+				+ stats.getNounCount() + ","
+				+ stats.getNounRate() + "," 
+				+ stats.getAdjectiveCount() + "," 
+				+ stats.getAdjectiveRate() + ","
+				+ stats.getAdverbCount() + "," 
+				+ stats.getAdverbRate() + "," 
+				+ stats.getVerbCount() + ","
+				+ stats.getVerbRate() + "," 
+				+ stats.getNumberCount() + "," 
+				+ stats.getNumberRate() + ","
+				+ stats.getSymbolCount() + "," 
+				+ stats.getSymbolRate() + "," 
+				+ stats.getForeignWordCount() + ","
+				+ stats.getForeignWordRate() + "," 
+				+ stats.getInterjectionCount() + ","
+				+ stats.getInterjectionRate() + "," 
+				+ stats.getSentenceCount() + "," 
+				+ stats.getParagraphCount() + ","
+				+ stats.getAvgTokensPerSentence() + "," 
+//				+ stats.getAvgSentencesPerParagraph() + "," 
 				+ bool + "\r\n";
 	}
 
@@ -32,11 +46,14 @@ public class ArffWriter {
 	 * @return void
 	 */
 	public void write() throws IOException {
-		BufferedWriter writer = new BufferedWriter(new FileWriter("./output/scientific.arff"));
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
+	    Date now = new Date();
+	    String strDate = sdfDate.format(now);
+	    BufferedWriter writer = new BufferedWriter(new FileWriter("./output/scientific" + strDate + ".arff"));
 		writer.write("@RELATION scientific\r\n");
 		writer.write("\r\n");
 		writer.write("@ATTRIBUTE tokencount NUMERIC\r\n");
-//		writer.write("@ATTRIBUTE lemmacount NUMERIC\r\n");
+		writer.write("@ATTRIBUTE lemmacount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE nouncount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE nounrate NUMERIC\r\n");
 		writer.write("@ATTRIBUTE adjectivecount NUMERIC\r\n");
@@ -51,6 +68,8 @@ public class ArffWriter {
 		writer.write("@ATTRIBUTE symbolrate NUMERIC\r\n");
 		writer.write("@ATTRIBUTE foreignwordcount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE foreignwordrate NUMERIC\r\n");
+		writer.write("@ATTRIBUTE interjectioncount NUMERIC\r\n");
+		writer.write("@ATTRIBUTE interjectionrate NUMERIC\r\n");
 		writer.write("@ATTRIBUTE sentencecount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE paragraphcount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE tokenpersentence NUMERIC\r\n");
