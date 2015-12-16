@@ -40,6 +40,7 @@ public class Statistics
 	private Long verbCount;
 	private Long nounCount;
 	private FrequencyDistribution<String> posFreq;
+	private Long numberCount;
 	
 	public Statistics(JCas jcas) throws Exception
     {
@@ -209,7 +210,8 @@ public class Statistics
     public Long getAdverbCount()
     {
         if( this.adverbCount == null )
-    		this.adverbCount = this.getPosFreq().getCount( "RB" ) + getPosFreq().getCount( "RBR" ) + getPosFreq().getCount( "RBS" );
+    		this.adverbCount = this.getPosFreq().getCount( "RB" ) + getPosFreq().getCount( "RBR" ) 
+    		+ getPosFreq().getCount( "RBS" );
     	return this.adverbCount;
 
     }
@@ -222,8 +224,22 @@ public class Statistics
     public Long getAdjectiveCount()
     {
         if( this.adjectiveCount == null )
-    		this.adjectiveCount = getPosFreq().getCount( "JJ" ) + getPosFreq().getCount( "JJR" ) + getPosFreq().getCount( "JJS" );
+    		this.adjectiveCount = getPosFreq().getCount( "JJ" ) + getPosFreq().getCount( "JJR" ) 
+    		+ getPosFreq().getCount( "JJS" );
     	return this.adjectiveCount;
+    }
+    
+    /**
+     * Zählt die Kardinalzahlen im Cas.
+     * 
+     * @return Long
+     */
+    public Long getNumberCount()
+    {
+        if( this.numberCount == null )
+    		this.numberCount = getPosFreq().getCount( "JJ" ) + getPosFreq().getCount( "JJR" ) 
+    		+ getPosFreq().getCount( "JJS" );
+    	return this.numberCount;
     }
     
     /**
@@ -235,8 +251,7 @@ public class Statistics
     public String getNounRate()
     {
         Double nounRate = (double) (getNounCount() / getTokenCount()) * 100;
-    	DecimalFormat numberFormat = new DecimalFormat("#.0");
-        return numberFormat.format(nounRate);
+        return getRate( nounRate );
     }
     
     /**
@@ -248,8 +263,7 @@ public class Statistics
     public String getVerbRate()
     {
         Double verbRate = (double) (getVerbCount() / getTokenCount()) * 100;
-    	DecimalFormat numberFormat = new DecimalFormat("#.0");
-        return numberFormat.format(verbRate);
+        return getRate( verbRate );
     }
     
     /**
@@ -261,8 +275,7 @@ public class Statistics
     public String getAdjectiveRate()
     {
         Double adjectiveRate = (double) (getAdjectiveCount() / getTokenCount()) * 100;
-    	DecimalFormat numberFormat = new DecimalFormat("#.0");
-        return numberFormat.format(adjectiveRate);
+        return getRate( adjectiveRate );
     }
     
     /**
@@ -274,8 +287,13 @@ public class Statistics
     public String getAdverbRate()
     {
         Double adverbRate = (double) (getAdverbCount() / getTokenCount()) * 100;
-    	DecimalFormat numberFormat = new DecimalFormat("#.0");
-        return numberFormat.format(adverbRate);
+        return getRate( adverbRate );
+    }
+    
+    private String getRate( Double number )
+    {
+    	DecimalFormat numberFormat = new DecimalFormat("#.00");
+        return numberFormat.format( number );
     }
     
     /**
@@ -337,4 +355,16 @@ public class Statistics
     	return select(this.jcas, Paragraph.class).size();
     }
 
+    /**
+     * Berechnung des Verhältnisses von Adverbien zu allen POS
+     * 
+     * @param FrequencyDistribution<String> nomen Nomenanzahl
+     * @return String
+     */
+    public String getNumberRate()
+    {
+        Double numberRate = (double) (getNumberCount() / getTokenCount()) * 100;
+    	DecimalFormat numberFormat = new DecimalFormat("#.00");
+        return numberFormat.format(numberRate);
+    }
 }
