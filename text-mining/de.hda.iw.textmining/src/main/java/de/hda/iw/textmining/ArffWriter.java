@@ -49,7 +49,7 @@ public class ArffWriter {
 		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
 	    Date now = new Date();
 	    String strDate = sdfDate.format(now);
-	    BufferedWriter writer = new BufferedWriter(new FileWriter("./output/scientific" + strDate + ".arff"));
+	    BufferedWriter writer = new BufferedWriter(new FileWriter("./output/scientific." + strDate + ".arff"));
 		writer.write("@RELATION scientific\r\n");
 		writer.write("\r\n");
 		writer.write("@ATTRIBUTE tokencount NUMERIC\r\n");
