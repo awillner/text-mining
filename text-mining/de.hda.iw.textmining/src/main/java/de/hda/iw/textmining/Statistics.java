@@ -3,13 +3,12 @@ package de.hda.iw.textmining;
 import static org.apache.uima.fit.util.JCasUtil.select;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.apache.uima.jcas.JCas;
 
 import de.tudarmstadt.ukp.dkpro.core.api.frequency.util.FrequencyDistribution;
-import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Paragraph;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -22,7 +21,6 @@ public class Statistics {
 	private Integer sentenceCount;
 	private Integer paragraphCount;
 	private Integer tokenCount;
-	private Integer lemmaCount;
 	private Long adjectiveCount;
 	private Long adverbCount;
 	private Long verbCount;
@@ -339,13 +337,20 @@ public class Statistics {
 	}
 
 	/**
-	 * Gibt das Verhältnis auf zwei Nachkommastellen
+	 * Gibt das Verhältnis auf zwei Nachkommastellen gerundet zurück.
+	 * 
 	 * @param number
 	 * @return
 	 */
 	private String getRate(Double number) {
-		DecimalFormat numberFormat = new DecimalFormat("#.00");
-		return numberFormat.format(number);
+		Locale locale  = new Locale("en", "UK");
+		String pattern = "###.##";
+
+		DecimalFormat decimalFormat = (DecimalFormat)
+		        NumberFormat.getNumberInstance(locale);
+		decimalFormat.applyPattern(pattern);
+
+		return decimalFormat.format(123456789.123);
 	}
 
 	/**
