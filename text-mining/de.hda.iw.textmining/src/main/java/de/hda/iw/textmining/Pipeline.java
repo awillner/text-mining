@@ -14,7 +14,6 @@ import org.apache.uima.jcas.JCas;
 
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
 import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolLemmatizer;
-import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolSegmenter;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpNameFinder;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpPosTagger;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
@@ -32,18 +31,24 @@ public class Pipeline {
 
 	public static void main(String[] args) throws Exception {
 		//Trainings-Daten
-		CollectionReaderDescription scientificTrainingReader = createReaderDescription(TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
-		CollectionReaderDescription nonscientificTrainingReader = createReaderDescription(TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", TextReader.PARAM_LANGUAGE,
-				"en");
+		CollectionReaderDescription scientificTrainingReader = createReaderDescription(
+				TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", 
+				TextReader.PARAM_LANGUAGE, "en");
+		CollectionReaderDescription nonscientificTrainingReader = createReaderDescription(
+				TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", 
+				TextReader.PARAM_LANGUAGE, "en");
 
 		//Test-Daten
-	    CollectionReaderDescription scientificTestReader = createReaderDescription(TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
-		CollectionReaderDescription nonscientificTestReader = createReaderDescription(TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", TextReader.PARAM_LANGUAGE,
-				"en");
+	    CollectionReaderDescription scientificTestReader = createReaderDescription(
+	    		TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/test/scientific/**/*", 
+				TextReader.PARAM_LANGUAGE, "en");
+		CollectionReaderDescription nonscientificTestReader = createReaderDescription(
+				TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/test/non-scientific/**/*", 
+				TextReader.PARAM_LANGUAGE, "en");
 
 		//Analyse
 		AnalysisEngineDescription pipeline = createEngineDescription(
@@ -62,10 +67,13 @@ public class Pipeline {
 		);
 
 		// Datensatz-Beschränkung (0=alle)
-		int max = 10;
+		int max = 1000;
 		
 		//Ausführung beginnen
 		Date start = new Date();
+
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
+	    String startDate = sdfDate.format(start);
 		System.out.println(start.toString() + " Start");
 		
 		//Arff-Datei für Trainings-Daten erstellen
@@ -79,7 +87,6 @@ public class Pipeline {
 			if (max > 0 && count > max)
 				break;
 		}
-
 		count = 0;
 		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificTrainingReader, pipeline)) {
 			Date time = new Date();
@@ -89,6 +96,8 @@ public class Pipeline {
 			if (max > 0 && count > max)
 				break;
 		}
+		// Trainings-Datei schreiben
+	    trainingArff.write( "training." + startDate );
 
 		//Arff-Datei für Test-Daten erstellen
 		count = 0;
@@ -101,7 +110,6 @@ public class Pipeline {
 			if (max > 0 && count > max)
 				break;
 		}
-
 		count = 0;
 		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificTestReader, pipeline)) {
 			Date time = new Date();
@@ -111,13 +119,8 @@ public class Pipeline {
 			if (max > 0 && count > max)
 				break;
 		}
-
-		// Dateien schreiben
-		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
-	    Date now = new Date();
-	    String strDate = sdfDate.format(now);
-	    trainingArff.write( "training." + strDate );
-	    testArff.write( "test." + strDate );
+		// Test-Datei schreiben
+	    testArff.write( "test." + startDate );
 
 
 		// Ausführung beenden
