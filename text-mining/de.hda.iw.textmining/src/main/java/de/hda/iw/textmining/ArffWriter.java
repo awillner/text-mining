@@ -13,6 +13,11 @@ public class ArffWriter {
 	 */
 	private String data = "";
 
+	/**
+	 * 
+	 * @param stats
+	 * @param bool
+	 */
 	public void addData(Statistics stats, String bool) {
 		this.data += stats.getTokenCount() + "," 
 				+ stats.getLemmaCount() + "," 
@@ -42,14 +47,13 @@ public class ArffWriter {
 	/**
 	 * Schreibt die Daten im arff-Format
 	 * 
+	 * @param filename Dateiname
+	 * 
 	 * @throws IOException
 	 * @return void
 	 */
-	public void write() throws IOException {
-		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
-	    Date now = new Date();
-	    String strDate = sdfDate.format(now);
-	    BufferedWriter writer = new BufferedWriter(new FileWriter("./output/scientific." + strDate + ".arff"));
+	public void write(String filename) throws IOException {
+	    BufferedWriter writer = new BufferedWriter(new FileWriter("./output/" + filename + ".arff"));
 		writer.write("@RELATION scientific\r\n");
 		writer.write("\r\n");
 		writer.write("@ATTRIBUTE tokencount NUMERIC\r\n");

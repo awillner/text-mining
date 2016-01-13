@@ -3,6 +3,7 @@ package de.hda.iw.textmining;
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
 import static org.apache.uima.fit.factory.CollectionReaderFactory.createReaderDescription;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -30,9 +31,21 @@ public class Pipeline {
 	private boolean useStopWords;
 
 	public static void main(String[] args) throws Exception {
-		CollectionReaderDescription scientificreader = createReaderDescription(TextReader.class,
+		//Trainings-Daten
+		CollectionReaderDescription scientificTrainingReader = createReaderDescription(TextReader.class,
 				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
+		CollectionReaderDescription nonscientificTrainingReader = createReaderDescription(TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", TextReader.PARAM_LANGUAGE,
+				"en");
 
+		//Test-Daten
+	    CollectionReaderDescription scientificTestReader = createReaderDescription(TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
+		CollectionReaderDescription nonscientificTestReader = createReaderDescription(TextReader.class,
+				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", TextReader.PARAM_LANGUAGE,
+				"en");
+
+		//Analyse
 		AnalysisEngineDescription pipeline = createEngineDescription(
 				createEngineDescription(OpenNlpSegmenter.class), 
 				createEngineDescription(StopWordRemover.class,
@@ -48,34 +61,66 @@ public class Pipeline {
 						OpenNlpNameFinder.PARAM_VARIANT, "organization")
 		);
 
-		ArffWriter arff = new ArffWriter();
-		int count = 0;
+		// Datensatz-Beschränkung (0=alle)
+		int max = 10;
+		
+		//Ausführung beginnen
 		Date start = new Date();
 		System.out.println(start.toString() + " Start");
-		for (JCas jcas : SimplePipeline.iteratePipeline(scientificreader, pipeline)) {
+		
+		//Arff-Datei für Trainings-Daten erstellen
+		int count = 0;
+		ArffWriter trainingArff = new ArffWriter();
+		for (JCas jcas : SimplePipeline.iteratePipeline(scientificTrainingReader, pipeline)) {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
-			System.out.println(time.toString() + " scientific: " + count++ + " " + stats.getTokenCount());
-			arff.addData(stats, "yes");
-			if (count > 500)
+			System.out.println(time.toString() + " scientific (train):" + count++ + " " + stats.getTokenCount());
+			trainingArff.addData(stats, "yes");
+			if (max > 0 && count > max)
 				break;
 		}
-
-		CollectionReaderDescription nonscientificreader = createReaderDescription(TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", TextReader.PARAM_LANGUAGE,
-				"en");
 
 		count = 0;
-		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificreader, pipeline)) {
+		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificTrainingReader, pipeline)) {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
-			System.out.println(time.toString() + " non-scientific: " + count++ + " " + stats.getTokenCount());
-			arff.addData(stats, "no");
-			if (count > 500)
+			System.out.println(time.toString() + " non-scientific (train): " + count++ + " " + stats.getTokenCount());
+			trainingArff.addData(stats, "no");
+			if (max > 0 && count > max)
 				break;
-
 		}
-		arff.write();
+
+		//Arff-Datei für Test-Daten erstellen
+		count = 0;
+		ArffWriter testArff = new ArffWriter();
+		for (JCas jcas : SimplePipeline.iteratePipeline(scientificTestReader, pipeline)) {
+			Date time = new Date();
+			Statistics stats = new Statistics(jcas);
+			System.out.println(time.toString() + " scientific (test):" + count++ + " " + stats.getTokenCount());
+			testArff.addData(stats, "yes");
+			if (max > 0 && count > max)
+				break;
+		}
+
+		count = 0;
+		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificTestReader, pipeline)) {
+			Date time = new Date();
+			Statistics stats = new Statistics(jcas);
+			System.out.println(time.toString() + " non-scientific (test): " + count++ + " " + stats.getTokenCount());
+			testArff.addData(stats, "no");
+			if (max > 0 && count > max)
+				break;
+		}
+
+		// Dateien schreiben
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyyMMdd.HHmmss");
+	    Date now = new Date();
+	    String strDate = sdfDate.format(now);
+	    trainingArff.write( "training." + strDate );
+	    testArff.write( "test." + strDate );
+
+
+		// Ausführung beenden
 		Date end = new Date();
 		System.out.println(end.toString() + " Ende");
 	}
