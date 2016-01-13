@@ -350,7 +350,7 @@ public class Statistics {
 		        NumberFormat.getNumberInstance(locale);
 		decimalFormat.applyPattern(pattern);
 
-		return decimalFormat.format(123456789.123);
+		return decimalFormat.format(number);
 	}
 
 	/**
