@@ -32,10 +32,10 @@ public class ArffWriter {
 				+ stats.getForeignWordRate() + "," 
 				+ stats.getInterjectionCount() + ","
 				+ stats.getInterjectionRate() + "," 
+				+ stats.getNamedEntityCount() + ","
+				+ stats.getNamedEntityRate() + "," 
 				+ stats.getSentenceCount() + "," 
-				+ stats.getParagraphCount() + ","
 				+ stats.getAvgTokensPerSentence() + "," 
-//				+ stats.getAvgSentencesPerParagraph() + "," 
 				+ bool + "\r\n";
 	}
 
@@ -70,10 +70,10 @@ public class ArffWriter {
 		writer.write("@ATTRIBUTE foreignwordrate NUMERIC\r\n");
 		writer.write("@ATTRIBUTE interjectioncount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE interjectionrate NUMERIC\r\n");
+		writer.write("@ATTRIBUTE namedentitycount NUMERIC\r\n");
+		writer.write("@ATTRIBUTE namedentityrate NUMERIC\r\n");
 		writer.write("@ATTRIBUTE sentencecount NUMERIC\r\n");
-		writer.write("@ATTRIBUTE paragraphcount NUMERIC\r\n");
 		writer.write("@ATTRIBUTE tokenpersentence NUMERIC\r\n");
-//		writer.write("@ATTRIBUTE sentenceperparagraph NUMERIC\r\n");
 		writer.write("@ATTRIBUTE scientific {yes,no}\r\n");
 		writer.write("\r\n");
 		writer.write("@DATA\r\n");

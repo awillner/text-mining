@@ -13,6 +13,8 @@ import org.apache.uima.jcas.JCas;
 
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
 import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolLemmatizer;
+import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolSegmenter;
+import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpNameFinder;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpPosTagger;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpSegmenter;
 import de.tudarmstadt.ukp.dkpro.core.stopwordremover.StopWordRemover;
@@ -32,11 +34,18 @@ public class Pipeline {
 				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", TextReader.PARAM_LANGUAGE, "en");
 
 		AnalysisEngineDescription pipeline = createEngineDescription(
-				createEngineDescription(OpenNlpSegmenter.class), createEngineDescription(StopWordRemover.class,
-						StopWordRemover.PARAM_MODEL_LOCATION, "[en]input/stop-word-list.txt"),
+				createEngineDescription(OpenNlpSegmenter.class), 
+				createEngineDescription(StopWordRemover.class,
+						StopWordRemover.PARAM_MODEL_LOCATION, 
+						"[en]input/stop-word-list.txt"),
 				createEngineDescription(OpenNlpPosTagger.class),
-				createEngineDescription(LanguageToolLemmatizer.class)
-		// createEngineDescription(StanfordNamedEntityRecognizer.class)
+				createEngineDescription(LanguageToolLemmatizer.class),
+				createEngineDescription(OpenNlpNameFinder.class,
+						OpenNlpNameFinder.PARAM_VARIANT, "person"),
+				createEngineDescription(OpenNlpNameFinder.class,
+						OpenNlpNameFinder.PARAM_VARIANT, "location"),
+				createEngineDescription(OpenNlpNameFinder.class,
+						OpenNlpNameFinder.PARAM_VARIANT, "organization")
 		);
 
 		ArffWriter arff = new ArffWriter();
