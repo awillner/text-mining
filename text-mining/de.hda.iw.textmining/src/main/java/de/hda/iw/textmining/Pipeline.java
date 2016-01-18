@@ -12,6 +12,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 
+import de.tudarmstadt.ukp.dkpro.core.io.aclanthology.AclAnthologyReader;
 import de.tudarmstadt.ukp.dkpro.core.io.text.TextReader;
 import de.tudarmstadt.ukp.dkpro.core.languagetool.LanguageToolLemmatizer;
 import de.tudarmstadt.ukp.dkpro.core.opennlp.OpenNlpNameFinder;
@@ -32,9 +33,9 @@ public class Pipeline {
 	public static void main(String[] args) throws Exception {
 		//Trainings-Daten
 		CollectionReaderDescription scientificTrainingReader = createReaderDescription(
-				TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", 
-				TextReader.PARAM_LANGUAGE, "en");
+				AclAnthologyReader.class,
+				AclAnthologyReader.PARAM_SOURCE_LOCATION, "input/training/scientific/**/*", 
+				AclAnthologyReader.PARAM_LANGUAGE, "en");
 		CollectionReaderDescription nonscientificTrainingReader = createReaderDescription(
 				TextReader.class,
 				TextReader.PARAM_SOURCE_LOCATION, "input/training/non-scientific/**/*", 
@@ -42,9 +43,9 @@ public class Pipeline {
 
 		//Test-Daten
 	    CollectionReaderDescription scientificTestReader = createReaderDescription(
-	    		TextReader.class,
-				TextReader.PARAM_SOURCE_LOCATION, "input/test/scientific/**/*", 
-				TextReader.PARAM_LANGUAGE, "en");
+	    		AclAnthologyReader.class,
+	    		AclAnthologyReader.PARAM_SOURCE_LOCATION, "input/test/scientific/**/*", 
+	    		AclAnthologyReader.PARAM_LANGUAGE, "en");
 		CollectionReaderDescription nonscientificTestReader = createReaderDescription(
 				TextReader.class,
 				TextReader.PARAM_SOURCE_LOCATION, "input/test/non-scientific/**/*", 
@@ -67,7 +68,7 @@ public class Pipeline {
 		);
 
 		// Datensatz-Beschränkung (0=alle)
-		int max = 1000;
+		int max = 100;
 		
 		//Ausführung beginnen
 		Date start = new Date();
@@ -83,7 +84,8 @@ public class Pipeline {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
 			System.out.println(time.toString() + " scientific (train):" + count++ + " " + stats.getTokenCount());
-			trainingArff.addData(stats, "yes");
+			if ( stats.getTokenCount() > 0 )
+				trainingArff.addData(stats, "yes");
 			if (max > 0 && count > max)
 				break;
 		}
@@ -92,7 +94,8 @@ public class Pipeline {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
 			System.out.println(time.toString() + " non-scientific (train): " + count++ + " " + stats.getTokenCount());
-			trainingArff.addData(stats, "no");
+			if ( stats.getTokenCount() > 0 )
+				trainingArff.addData(stats, "no");
 			if (max > 0 && count > max)
 				break;
 		}
@@ -106,7 +109,8 @@ public class Pipeline {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
 			System.out.println(time.toString() + " scientific (test):" + count++ + " " + stats.getTokenCount());
-			testArff.addData(stats, "yes");
+			if ( stats.getTokenCount() > 0 )
+				testArff.addData(stats, "yes");
 			if (max > 0 && count > max)
 				break;
 		}
@@ -115,7 +119,8 @@ public class Pipeline {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
 			System.out.println(time.toString() + " non-scientific (test): " + count++ + " " + stats.getTokenCount());
-			testArff.addData(stats, "no");
+			if ( stats.getTokenCount() > 0 )
+				testArff.addData(stats, "no");
 			if (max > 0 && count > max)
 				break;
 		}

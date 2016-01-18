@@ -21,7 +21,6 @@ public class Statistics {
 	private JCas jcas;
 	private Integer sentenceCount;
 	private Integer paragraphCount;
-	private Integer namedEntitiesCount;
 	private Integer tokenCount;
 	private Long adjectiveCount;
 	private Long adverbCount;
@@ -52,7 +51,7 @@ public class Statistics {
 		System.out.println("Anzahl POS (gesamt): " + getPosFreq().getB());
 		System.out.println("POS (Nomen): " + getNounCount());
 		System.out.println("POS (Verben): " + getVerbCount());
-		System.out.println("POS (Adverben): " + getAdverbCount() );
+		System.out.println("POS (Adverben): " + getAdverbCount());
 		System.out.println("POS (Adjektive): " + getAdverbCount());
 
 		// Ausgabe Verhältnisse
@@ -62,6 +61,36 @@ public class Statistics {
 		System.out.println("Anteil Adjektive: " + getAdjectiveRate() + "%");
 
 		System.out.println("Anteil Lemma an Tokens (gesamt): " + getLemmaRate());
+	}
+
+
+	/**
+	 * Gibt eine Kommazahl auf zwei Nachkommastellen gerundet zurück.
+	 * 
+	 * @param number
+	 * @return
+	 */
+	private String getRate(Double number) {
+		Locale locale = new Locale("en", "UK");
+		String pattern = "###.##";
+
+		DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
+		decimalFormat.applyPattern(pattern);
+
+		return decimalFormat.format(number);
+	}
+
+	/**
+	 * Gibt die Frequency Distribution für Lemma zurück.
+	 * 
+	 * @return FrequencyDistribution<String>
+	 */
+	public FrequencyDistribution<String> getLemmaDistribution() {
+		FrequencyDistribution<String> freq = new FrequencyDistribution<String>();
+		for (Token token : select(this.jcas, Token.class)) {
+			freq.inc(token.getLemma().getValue());
+		}
+		return freq;
 	}
 
 	/**
@@ -87,12 +116,53 @@ public class Statistics {
 	}
 
 	/**
+	 * Gibt an, wieviel Tokens durchschnittlich pro Satz verwendet werden.
+	 * 
+	 * @return
+	 */
+	public String getAvgTokensPerSentence() {
+		Double tokenpersentence = (double) getSentenceCount() / (double) getTokenCount() * 100;
+		return getRate(tokenpersentence);
+	}
+
+	/**
+	 * Gibt die Anzahl an Absätzen zurück.
+	 * 
+	 * @return
+	 */
+	public Integer getParagraphCount() {
+		if (this.paragraphCount == null)
+			this.paragraphCount = select(this.jcas, Paragraph.class).size();
+		return this.paragraphCount;
+	}
+
+	/**
+	 * Gibt an, wieviel Tokens durchschnittlich pro Satz verwendet werden.
+	 * 
+	 * @return
+	 */
+	public String getAvgSentencesPerParagraph() {
+		Double sentenceperparagraph = (double) getSentenceCount() / (double) getParagraphCount() * 100;
+		return getRate(sentenceperparagraph);
+	}
+
+	/**
 	 * Returns the count of the Lemmata in the CAS
 	 * 
 	 * @return Integer
 	 */
 	public Integer getLemmaCount() {
 		return (int) getLemmaDistribution().getB();
+	}
+
+	/**
+	 * Berechnung des Verhältnisses von Lemma zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getLemmaRate() {
+		Double lemmaRate = (double) getLemmaCount() / (double) getTokenCount() * 100;
+		return getRate(lemmaRate);
 	}
 
 	/**
@@ -117,13 +187,21 @@ public class Statistics {
 	 */
 	public Long getNounCount() {
 		if (this.nounCount == null) {
-			this.nounCount = getPosFreq().getCount("NN") 
-					+ getPosFreq().getCount("NNS") 
-					+ getPosFreq().getCount("NNP")
+			this.nounCount = getPosFreq().getCount("NN") + getPosFreq().getCount("NNS") + getPosFreq().getCount("NNP")
 					+ getPosFreq().getCount("NNPS");
 		}
 
 		return this.nounCount;
+	}
+
+	/**
+	 * Berechnung des Verhältnisses von Nomen zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getNounRate() {
+		Double nounRate = (double) getNounCount() / (double) getTokenCount() * 100;
+		return getRate(nounRate);
 	}
 
 	/**
@@ -139,6 +217,16 @@ public class Statistics {
 	}
 
 	/**
+	 * Berechnung des Verhältnisses von Verben zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getVerbRate() {
+		Double verbRate = (double) getVerbCount() / (double) getTokenCount() * 100;
+		return getRate(verbRate);
+	}
+
+	/**
 	 * Zählt die Adverben im Cas.
 	 * 
 	 * @return Long
@@ -148,7 +236,16 @@ public class Statistics {
 			this.adverbCount = this.getPosFreq().getCount("RB") + getPosFreq().getCount("RBR")
 					+ getPosFreq().getCount("RBS");
 		return this.adverbCount;
+	}
 
+	/**
+	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getAdverbRate() {
+		Double adverbRate = (double) getAdverbCount() / (double) getTokenCount() * 100;
+		return getRate(adverbRate);
 	}
 
 	/**
@@ -164,6 +261,16 @@ public class Statistics {
 	}
 
 	/**
+	 * Berechnung des Verhältnisses von Adjectiven zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getAdjectiveRate() {
+		Double adjectiveRate = (double) getAdjectiveCount() / (double) getTokenCount() * 100;
+		return getRate(adjectiveRate);
+	}
+
+	/**
 	 * Zählt die Kardinalzahlen im Cas.
 	 * 
 	 * @return Long
@@ -173,6 +280,16 @@ public class Statistics {
 			this.numberCount = getPosFreq().getCount("JJ") + getPosFreq().getCount("JJR")
 					+ getPosFreq().getCount("JJS");
 		return this.numberCount;
+	}
+
+	/**
+	 * Berechnung des Verhältnisses von Zahlen zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getNumberRate() {
+		Double numberRate = (double) getNumberCount() / (double) getTokenCount() * 100;
+		return getRate(numberRate);
 	}
 
 	/**
@@ -189,6 +306,16 @@ public class Statistics {
 	}
 
 	/**
+	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getSymbolRate() {
+		Double symbolRate = (double) getSymbolCount() / (double) getTokenCount() * 100;
+		return getRate(symbolRate);
+	}
+
+	/**
 	 * Zählt die Fremdwörter im Cas.
 	 * 
 	 * @return Long
@@ -199,6 +326,16 @@ public class Statistics {
 		}
 
 		return this.foreignWordCount;
+	}
+
+	/**
+	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * 
+	 * @return String
+	 */
+	public String getForeignWordRate() {
+		Double foreignWordRate = (double) getForeignWordCount() / (double) getTokenCount() * 100;
+		return getRate(foreignWordRate);
 	}
 
 	/**
@@ -215,76 +352,6 @@ public class Statistics {
 	}
 
 	/**
-	 * Berechnung des Verhältnisses von Nomen zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getNounRate() {
-		Double nounRate = (double) getNounCount() / (double) getTokenCount() * 100;
-		return getRate(nounRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Verben zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getVerbRate() {
-		Double verbRate = (double) getVerbCount() / (double) getTokenCount() * 100;
-		return getRate(verbRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Adjectiven zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getAdjectiveRate() {
-		Double adjectiveRate = (double) getAdjectiveCount() / (double) getTokenCount() * 100;
-		return getRate(adjectiveRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getAdverbRate() {
-		Double adverbRate = (double) getAdverbCount() / (double) getTokenCount() * 100;
-		return getRate(adverbRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getNumberRate() {
-		Double numberRate = (double) getNumberCount() / (double) getTokenCount() * 100;
-		return getRate(numberRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getSymbolRate() {
-		Double symbolRate = (double) getSymbolCount() / (double) getTokenCount() * 100;
-		return getRate(symbolRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getForeignWordRate() {
-		Double foreignWordRate = (double) getForeignWordCount() / (double) getTokenCount() * 100;
-		return getRate(foreignWordRate);
-	}
-
-	/**
 	 * Berechnung des Verhältnisses von Adverbien zu allen POS
 	 * 
 	 * @return String
@@ -292,77 +359,6 @@ public class Statistics {
 	public String getInterjectionRate() {
 		Double interjectionRate = (double) getInterjectionCount() / (double) getTokenCount() * 100;
 		return getRate(interjectionRate);
-	}
-
-	/**
-	 * Berechnung des Verhältnisses von Lemma zu allen POS
-	 * 
-	 * @return String
-	 */
-	public String getLemmaRate() {
-		Double lemmaRate = (double) getLemmaCount() / (double) getTokenCount() * 100;
-		return getRate(lemmaRate);
-	}
-
-	/**
-	 * Gibt das Verhältnis auf zwei Nachkommastellen gerundet zurück.
-	 * 
-	 * @param number
-	 * @return
-	 */
-	private String getRate(Double number) {
-		Locale locale  = new Locale("en", "UK");
-		String pattern = "###.##";
-
-		DecimalFormat decimalFormat = (DecimalFormat)
-		        NumberFormat.getNumberInstance(locale);
-		decimalFormat.applyPattern(pattern);
-
-		return decimalFormat.format(number);
-	}
-
-	/**
-	 * Gibt die Frequency Distribution für Lemma zurück.
-	 * 
-	 * @return FrequencyDistribution<String>
-	 */
-	public FrequencyDistribution<String> getLemmaDistribution() {
-		FrequencyDistribution<String> freq = new FrequencyDistribution<String>();
-		for (Token token : select(this.jcas, Token.class)) {
-			freq.inc(token.getLemma().getValue());
-		}
-		return freq;
-	}
-
-	/**
-	 * Gibt an, wieviel Tokens durchschnittlich pro Satz verwendet werden.
-	 * 
-	 * @return
-	 */
-	public String getAvgTokensPerSentence() {
-		Double tokenpersentence = (double) getSentenceCount() / (double) getTokenCount() * 100;
-		return getRate(tokenpersentence);
-	}
-
-	/**
-	 * Gibt an, wieviel Tokens durchschnittlich pro Satz verwendet werden.
-	 * 
-	 * @return
-	 */
-	public String getAvgSentencesPerParagraph() {
-		Double sentenceperparagraph = (double) getSentenceCount() / (double) getParagraphCount() * 100;
-		return getRate(sentenceperparagraph);
-	}
-
-	/**
-	 * Gibt die Anzahl an Absätzen zurück.
-	 * 
-	 * @return
-	 */
-	public Integer getParagraphCount() {
-		if (this.paragraphCount == null)
-			this.paragraphCount = select(this.jcas, Paragraph.class).size();
-		return this.paragraphCount;
 	}
 
 	/**
