@@ -15,7 +15,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
 /**
- * 
+ * Klasse für statistische Auswertungungen eines Dokuments
  */
 public class Statistics {
 	private JCas jcas;
@@ -32,36 +32,50 @@ public class Statistics {
 	private Long symbolCount;
 	private Long interjectionCount;
 
+	/**
+	 * Konstruktor 
+	 * @param jcas
+	 * @throws Exception
+	 */
 	public Statistics(JCas jcas) throws Exception {
 		this.jcas = jcas;
 	}
 
 	/**
-	 * Writes to counts to the console.
+	 * Gibt die Werte in der Konsole aus.
 	 */
 	public void print() {
-		// Zählt die Sätze Text
+		System.out.println("Anzahl Tokens (gesamt): " + getTokenCount());
+		
 		System.out.println("Anzahl Sätze: " + getSentenceCount());
+		System.out.println("Durchschnittliche Tokens pro Satz: " + getAvgTokensPerSentence());
+		System.out.println("Anzahl Absätze: " + getSentenceCount());
+		System.out.println("Durchschnittliche Sätze pro Absatz: " + getAvgSentencesPerParagraph());
 
-		// // Ausgabe Gesamtanzahl Tokens
-		// System.out.println("Anzahl Tokens (gesamt): " + getTokenCount());
+		System.out.println("Anzahl Lemma (gesamt): " + getLemmaCount());
+		System.out.println("Anteil Lemma an allen Tokens : " + getLemmaRate());
 
-		// Ausgabe Zählungen
-		// System.out.println("POS (Anzahl): " + freq.toString() );
 		System.out.println("Anzahl POS (gesamt): " + getPosFreq().getB());
 		System.out.println("POS (Nomen): " + getNounCount());
-		System.out.println("POS (Verben): " + getVerbCount());
-		System.out.println("POS (Adverben): " + getAdverbCount());
-		System.out.println("POS (Adjektive): " + getAdverbCount());
-
-		// Ausgabe Verhältnisse
 		System.out.println("Anteil Nomen: " + getNounRate() + "%");
+		System.out.println("POS (Verben): " + getVerbCount());
 		System.out.println("Anteil Verben: " + getVerbRate() + "%");
+		System.out.println("POS (Adverben): " + getAdverbCount());
 		System.out.println("Anteil Adverben: " + getAdverbRate() + "%");
+		System.out.println("POS (Adjektive): " + getAdjectiveCount());
 		System.out.println("Anteil Adjektive: " + getAdjectiveRate() + "%");
+		System.out.println("POS (Number): " + getNumberCount());
+		System.out.println("Anteil Number: " + getNumberRate() + "%");
+		System.out.println("POS (Symbol): " + getSymbolCount());
+		System.out.println("Anteil Symbol: " + getSymbolRate() + "%");
+		System.out.println("POS (Foreign Word): " + getForeignWordCount());
+		System.out.println("Anteil Foreign Word: " + getForeignWordRate()+ "%");
+		System.out.println("POS (Interjection): " + getInterjectionCount());
+		System.out.println("Anteil Interjection: " + getInterjectionRate() + "%");
 
-		System.out.println("Anteil Lemma an Tokens (gesamt): " + getLemmaRate());
-	}
+		System.out.println("Anzahl NER: " + getNamedEntityCount());
+		System.out.println("Anteil NER: " + getNamedEntityRate());
+}
 
 
 	/**
@@ -94,7 +108,7 @@ public class Statistics {
 	}
 
 	/**
-	 * Returns the count of the Sentences in the CAS
+	 * Gibt die Anzahl an Sätzen im CAS zurück
 	 * 
 	 * @return Integer
 	 */
@@ -105,7 +119,7 @@ public class Statistics {
 	}
 
 	/**
-	 * Returns the count of the Tokens in the CAS
+	 * Gibt die Anzahl an Tokens im CAS zurück
 	 * 
 	 * @return Integer
 	 */
@@ -181,14 +195,14 @@ public class Statistics {
 	}
 
 	/**
-	 * Zählt die Nomen im Cas.
+	 * Zählt die Nomen im CAS.
 	 * 
 	 * @return Long
 	 */
 	public Long getNounCount() {
 		if (this.nounCount == null) {
-			this.nounCount = getPosFreq().getCount("NN") + getPosFreq().getCount("NNS") + getPosFreq().getCount("NNP")
-					+ getPosFreq().getCount("NNPS");
+			this.nounCount = getPosFreq().getCount("NN") + getPosFreq().getCount("NNS") 
+					+ getPosFreq().getCount("NNP") + getPosFreq().getCount("NNPS");
 		}
 
 		return this.nounCount;
@@ -211,8 +225,9 @@ public class Statistics {
 	 */
 	public Long getVerbCount() {
 		if (this.verbCount == null)
-			this.verbCount = getPosFreq().getCount("VB") + getPosFreq().getCount("VBD") + getPosFreq().getCount("VBG")
-					+ getPosFreq().getCount("VBN") + getPosFreq().getCount("VBP") + getPosFreq().getCount("VBZ");
+			this.verbCount = getPosFreq().getCount("VB") + getPosFreq().getCount("VBD") 
+				+ getPosFreq().getCount("VBG") + getPosFreq().getCount("VBN") 
+				+ getPosFreq().getCount("VBP") + getPosFreq().getCount("VBZ");
 		return this.verbCount;
 	}
 
@@ -277,8 +292,7 @@ public class Statistics {
 	 */
 	public Long getNumberCount() {
 		if (this.numberCount == null)
-			this.numberCount = getPosFreq().getCount("JJ") + getPosFreq().getCount("JJR")
-					+ getPosFreq().getCount("JJS");
+			this.numberCount = getPosFreq().getCount("CD");
 		return this.numberCount;
 	}
 
@@ -293,7 +307,7 @@ public class Statistics {
 	}
 
 	/**
-	 * Zählt die Nomen im Cas.
+	 * Zählt die Symbole im Cas.
 	 * 
 	 * @return Long
 	 */
@@ -306,7 +320,7 @@ public class Statistics {
 	}
 
 	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * Berechnung des Verhältnisses von Symbolen zu allen POS
 	 * 
 	 * @return String
 	 */
@@ -322,14 +336,14 @@ public class Statistics {
 	 */
 	public Long getForeignWordCount() {
 		if (this.foreignWordCount == null) {
-			this.foreignWordCount = getPosFreq().getCount("SYM");
+			this.foreignWordCount = getPosFreq().getCount("FW");
 		}
 
 		return this.foreignWordCount;
 	}
 
 	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * Berechnung des Verhältnisses von Fremdwörtern zu allen POS
 	 * 
 	 * @return String
 	 */
@@ -339,20 +353,20 @@ public class Statistics {
 	}
 
 	/**
-	 * Zählt die Fremdwörter im Cas.
+	 * Zählt die Interpunktionszeichen im Cas.
 	 * 
 	 * @return Long
 	 */
 	public Long getInterjectionCount() {
 		if (this.interjectionCount == null) {
-			this.interjectionCount = getPosFreq().getCount("SYM");
+			this.interjectionCount = getPosFreq().getCount("UH");
 		}
 
 		return this.interjectionCount;
 	}
 
 	/**
-	 * Berechnung des Verhältnisses von Adverbien zu allen POS
+	 * Berechnung des Verhältnisses von Interpunktionszeichen zu allen POS
 	 * 
 	 * @return String
 	 */
@@ -389,7 +403,7 @@ public class Statistics {
 	 * @return String
 	 */
 	public String getNamedEntityRate() {
-		Double verbRate = (double) getNamedEntityCount() / (double) getLemmaCount() * 100;
-		return getRate(verbRate);
+		Double nerRate = (double) getNamedEntityCount() / (double) getLemmaCount() * 100;
+		return getRate(nerRate);
 	}
 }

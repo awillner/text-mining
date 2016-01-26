@@ -68,7 +68,7 @@ public class Pipeline {
 		);
 
 		// Datensatz-Beschränkung (0=alle)
-		int max = 100;
+		int max = 20000;
 		
 		//Ausführung beginnen
 		Date start = new Date();
@@ -83,7 +83,8 @@ public class Pipeline {
 		for (JCas jcas : SimplePipeline.iteratePipeline(scientificTrainingReader, pipeline)) {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
-			System.out.println(time.toString() + " scientific (train):" + count++ + " " + stats.getTokenCount());
+			System.out.println(time.toString() + " scientific (train):" 
+					+ count++ + " " + stats.getTokenCount());
 			if ( stats.getTokenCount() > 0 )
 				trainingArff.addData(stats, "yes");
 			if (max > 0 && count > max)
@@ -93,7 +94,8 @@ public class Pipeline {
 		for (JCas jcas : SimplePipeline.iteratePipeline(nonscientificTrainingReader, pipeline)) {
 			Date time = new Date();
 			Statistics stats = new Statistics(jcas);
-			System.out.println(time.toString() + " non-scientific (train): " + count++ + " " + stats.getTokenCount());
+			System.out.println(time.toString() + " non-scientific (train): " 
+					+ count++ + " " + stats.getTokenCount());
 			if ( stats.getTokenCount() > 0 )
 				trainingArff.addData(stats, "no");
 			if (max > 0 && count > max)
